@@ -29,6 +29,7 @@ type alias Model =
     { mediaUrl : String
     , mediaType : String
     , currentTime : Float
+    , duration : Float
     }
 
 
@@ -39,6 +40,7 @@ type alias Model =
 type Msg
     = TimeUpdate Float
     | SetPlayerTime Float
+    | SetDuration Float
 
 
 init : ( Model, Cmd Msg )
@@ -46,6 +48,7 @@ init =
     { mediaUrl = "https://mdn.mozillademos.org/files/2587/AudioTest (1).ogg"
     , mediaType = "audio/ogg"
     , currentTime = 0.0
+    , duration = 0.0
     }
         ! []
 
@@ -63,18 +66,31 @@ update msg model =
         SetPlayerTime newTime ->
             ( model, setCurrentTime newTime )
 
+        SetDuration duration ->
+            ( { model | duration = duration }, Cmd.none )
 
 
--- Custom event handler
+
+-- Once Metadata loaded, grab duration
+
+
+onLoadedMetadata : (Float -> msg) -> Attribute msg
+onLoadedMetadata msg =
+    on "loadedmetadata" (Json.Decode.map msg targetDuration)
+
+
+targetDuration : Json.Decode.Decoder Float
+targetDuration =
+    Json.Decode.at [ "target", "duration" ] Json.Decode.float
+
+
+
+-- On timeUpdate grab currentTime
 
 
 onTimeUpdate : (Float -> msg) -> Attribute msg
 onTimeUpdate msg =
     on "timeupdate" (Json.Decode.map msg targetCurrentTime)
-
-
-
--- Json.Decoder to grab `event.target.currentTime`
 
 
 targetCurrentTime : Json.Decode.Decoder Float
@@ -104,17 +120,27 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    div [ class "elm-audioplayer" ]
+    div [ id "elm-audioplayer" ]
         [ audio
-            [ id "audio-player"
+            [ id "elm-audio-file"
             , src model.mediaUrl
             , type' model.mediaType
             , controls True
+            , onLoadedMetadata SetDuration
             , onTimeUpdate TimeUpdate
             ]
             []
-        , div [] [ text (toString model.currentTime) ]
-        , button [ onClick (SetPlayerTime 2.0) ] [ text "Set current time to 2s" ]
+        , div [ class "audioplayer" ]
+            [ button
+                [ class "play"
+                , onClick (SetPlayerTime 2.0)
+                ]
+                []
+            , div [ class "timeline" ]
+                [ div [ class "playhead" ] []
+                ]
+            ]
+        , text (toString model)
         ]
 
 
