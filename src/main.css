@@ -1,3 +1,42 @@
-body {
-  margin: 0;
+#elm-audioplayer .audioplayer {
+  border: solid;
+  height: 60px;
+  margin: 50px auto 0;
+  width: 480px;
+}
+
+#elm-audioplayer .play {
+  background-image: url('http://www.alexkatz.me/codepen/images/play.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 50% 50%;
+  border: 0;
+  float: left;
+  height: 60px;
+  outline: none;
+  width: 60px;
+}
+
+#elm-audioplayer .pause {
+  background-image: url('http://www.alexkatz.me/codepen/images/pause.png');
+}
+
+#elm-audioplayer .timeline {
+  background: rgba(0, 0, 0, .3);
+  border-radius: 15px;
+  float: left;
+  height: 20px;
+  margin-top: 20px;
+  position: relative;
+  width: 400px;
+}
+
+#elm-audioplayer .playhead {
+  background: #000;
+  border-radius: 50%;
+  left: 0;
+  height: 18px;
+  position: absolute;
+  top: 1px;
+  width: 18px;
 }
