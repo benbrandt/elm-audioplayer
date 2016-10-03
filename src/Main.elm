@@ -4,6 +4,7 @@ import Debug
 import Html
     exposing
         ( Html
+        , Attribute
         , audio
         , div
         , text
@@ -17,6 +18,8 @@ import Html.Attributes
         , src
         , type'
         )
+import Html.Events exposing (on)
+import Json.Decode
 
 
 -- MODEL
@@ -25,6 +28,7 @@ import Html.Attributes
 type alias Model =
     { mediaUrl : String
     , mediaType : String
+    , currentTime : Float
     }
 
 
@@ -34,12 +38,14 @@ type alias Model =
 
 type Msg
     = NoOp
+    | TimeUpdate Float
 
 
 init : ( Model, Cmd Msg )
 init =
     { mediaUrl = "https://mdn.mozillademos.org/files/2587/AudioTest (1).ogg"
     , mediaType = "audio/ogg"
+    , currentTime = 0.0
     }
         ! []
 
@@ -51,8 +57,29 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        TimeUpdate time ->
+            ( { model | currentTime = time }, Cmd.none )
+
         _ ->
             Debug.log "Unkown message" ( model, Cmd.none )
+
+
+
+-- Custom event handler
+
+
+onTimeUpdate : (Float -> msg) -> Attribute msg
+onTimeUpdate msg =
+    on "timeupdate" (Json.Decode.map msg targetCurrentTime)
+
+
+
+-- Json.Decoder to grab `event.target.currentTime`
+
+
+targetCurrentTime : Json.Decode.Decoder Float
+targetCurrentTime =
+    Json.Decode.at [ "target", "currentTime" ] Json.Decode.float
 
 
 
@@ -68,7 +95,7 @@ subscriptions model =
 -- VIEW
 
 
-view : Model -> Html msg
+view : Model -> Html Msg
 view model =
     div [ class "elm-audioplayer" ]
         [ audio
@@ -76,8 +103,10 @@ view model =
             , src model.mediaUrl
             , type' model.mediaType
             , controls True
+            , onTimeUpdate TimeUpdate
             ]
             []
+        , div [] [ text (toString model.currentTime) ]
         ]
 
 
