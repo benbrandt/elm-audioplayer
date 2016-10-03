@@ -1,20 +1,22 @@
 #elm-audioplayer .audioplayer {
-  border: solid;
+  border-top: solid;
+  bottom: 0;
   height: 60px;
-  margin: 50px auto 0;
-  width: 480px;
+  left: 0;
+  position: absolute;
+  width: 100%;
 }
 
 #elm-audioplayer .play {
   background-image: url('http://www.alexkatz.me/codepen/images/play.png');
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 50% 50%;
+  background-size: contain;
   border: 0;
   float: left;
   height: 60px;
   outline: none;
-  width: 60px;
+  width: 15%;
 }
 
 #elm-audioplayer .pause {
@@ -26,9 +28,10 @@
   border-radius: 15px;
   float: left;
   height: 20px;
+  margin-left: 2.5%;
   margin-top: 20px;
   position: relative;
-  width: 400px;
+  width: 80%;
 }
 
 #elm-audioplayer .playhead {
