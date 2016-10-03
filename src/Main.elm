@@ -1,34 +1,67 @@
 module Main exposing (..)
 
+import Debug
 import Html
     exposing
         ( Html
+        , audio
+        , div
         , text
         )
 import Html.App
+import Html.Attributes
+    exposing
+        ( class
+        , controls
+        , id
+        , src
+        , type'
+        )
 
 
 -- MODEL
 
 
 type alias Model =
-    { src : String
+    { mediaUrl : String
+    , mediaType : String
     }
 
 
-init : Model
+
+-- MSG
+
+
+type Msg
+    = NoOp
+
+
+init : ( Model, Cmd Msg )
 init =
-    { src = "example.mp3"
+    { mediaUrl = "https://mdn.mozillademos.org/files/2587/AudioTest (1).ogg"
+    , mediaType = "audio/ogg"
     }
+        ! []
 
 
 
 -- UPDATE
 
 
-update : msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        _ ->
+            Debug.log "Unkown message" ( model, Cmd.none )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
 
 
 
@@ -37,13 +70,21 @@ update msg model =
 
 view : Model -> Html msg
 view model =
-    text (toString model)
+    div [ class "elm-audioplayer" ]
+        [ audio
+            [ id "audio-player"
+            , src model.mediaUrl
+            , type' model.mediaType
+            , controls True
+            ]
+            []
+        ]
 
 
 main : Program Never
 main =
     Html.App.program
-        { init = ( init, Cmd.none )
+        { init = init
         , update = update
         , subscriptions = (\_ -> Sub.none)
         , view = view
