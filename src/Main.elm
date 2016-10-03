@@ -1,11 +1,11 @@
-module Main exposing (..)
+port module Main exposing (..)
 
-import Debug
 import Html
     exposing
         ( Html
         , Attribute
         , audio
+        , button
         , div
         , text
         )
@@ -18,7 +18,7 @@ import Html.Attributes
         , src
         , type'
         )
-import Html.Events exposing (on)
+import Html.Events exposing (on, onClick)
 import Json.Decode
 
 
@@ -37,8 +37,8 @@ type alias Model =
 
 
 type Msg
-    = NoOp
-    | TimeUpdate Float
+    = TimeUpdate Float
+    | SetPlayerTime Float
 
 
 init : ( Model, Cmd Msg )
@@ -60,8 +60,8 @@ update msg model =
         TimeUpdate time ->
             ( { model | currentTime = time }, Cmd.none )
 
-        _ ->
-            Debug.log "Unkown message" ( model, Cmd.none )
+        SetPlayerTime newTime ->
+            ( model, setCurrentTime newTime )
 
 
 
@@ -80,6 +80,13 @@ onTimeUpdate msg =
 targetCurrentTime : Json.Decode.Decoder Float
 targetCurrentTime =
     Json.Decode.at [ "target", "currentTime" ] Json.Decode.float
+
+
+
+-- PORTS
+
+
+port setCurrentTime : Float -> Cmd msg
 
 
 
@@ -107,6 +114,7 @@ view model =
             ]
             []
         , div [] [ text (toString model.currentTime) ]
+        , button [ onClick (SetPlayerTime 2.0) ] [ text "Set current time to 2s" ]
         ]
 
 
