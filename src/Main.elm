@@ -13,7 +13,7 @@ import Html.App
 import Html.Attributes
     exposing
         ( class
-        , controls
+        , classList
         , id
         , src
         , style
@@ -32,6 +32,7 @@ type alias Model =
     , currentTime : Float
     , playheadPosition : Float
     , duration : Float
+    , playing : Bool
     }
 
 
@@ -41,6 +42,7 @@ type alias Model =
 
 type Msg
     = TimeUpdate Float
+    | ToggleAudio
     | SetPlayerTime Float
     | SetDuration Float
 
@@ -52,6 +54,7 @@ init =
     , currentTime = 0.0
     , playheadPosition = 0.0
     , duration = 0.0
+    , playing = False
     }
         ! []
 
@@ -70,6 +73,9 @@ update msg model =
               }
             , Cmd.none
             )
+
+        ToggleAudio ->
+            ( { model | playing = not model.playing }, toggleAudioState (not model.playing) )
 
         SetPlayerTime newTime ->
             ( model, setCurrentTime newTime )
@@ -118,6 +124,9 @@ targetCurrentTime =
 port setCurrentTime : Float -> Cmd msg
 
 
+port toggleAudioState : Bool -> Cmd msg
+
+
 
 -- SUBSCRIPTIONS
 
@@ -138,15 +147,22 @@ view model =
             [ id "elm-audio-file"
             , src model.mediaUrl
             , type' model.mediaType
-            , controls True
             , onLoadedMetadata SetDuration
             , onTimeUpdate TimeUpdate
             ]
             []
         , div [ class "audioplayer" ]
             [ button
-                [ class "play"
-                , onClick (SetPlayerTime 2.0)
+                [ classList
+                    [ ( "play", True )
+                    , ( "pause"
+                      , (model.playing
+                            && model.playheadPosition
+                            < 100.0
+                        )
+                      )
+                    ]
+                , onClick ToggleAudio
                 ]
                 []
             , div [ class "timeline" ]
