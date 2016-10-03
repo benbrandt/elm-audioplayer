@@ -16,6 +16,7 @@ import Html.Attributes
         , controls
         , id
         , src
+        , style
         , type'
         )
 import Html.Events exposing (on, onClick)
@@ -29,6 +30,7 @@ type alias Model =
     { mediaUrl : String
     , mediaType : String
     , currentTime : Float
+    , playheadPosition : Float
     , duration : Float
     }
 
@@ -48,6 +50,7 @@ init =
     { mediaUrl = "https://mdn.mozillademos.org/files/2587/AudioTest (1).ogg"
     , mediaType = "audio/ogg"
     , currentTime = 0.0
+    , playheadPosition = 0.0
     , duration = 0.0
     }
         ! []
@@ -61,13 +64,23 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TimeUpdate time ->
-            ( { model | currentTime = time }, Cmd.none )
+            ( { model
+                | currentTime = time
+                , playheadPosition = updatePlayhead time model.duration
+              }
+            , Cmd.none
+            )
 
         SetPlayerTime newTime ->
             ( model, setCurrentTime newTime )
 
         SetDuration duration ->
             ( { model | duration = duration }, Cmd.none )
+
+
+updatePlayhead : Float -> Float -> Float
+updatePlayhead currentTime duration =
+    currentTime / duration * 100
 
 
 
@@ -137,7 +150,11 @@ view model =
                 ]
                 []
             , div [ class "timeline" ]
-                [ div [ class "playhead" ] []
+                [ div
+                    [ class "playhead"
+                    , style [ ( "left", toString model.playheadPosition ++ "%" ) ]
+                    ]
+                    []
                 ]
             ]
         , text (toString model)
