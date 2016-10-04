@@ -68,8 +68,14 @@ update msg model =
             let
                 ( controlsModel, controlsCmds ) =
                     Controls.update msg' model.controls
+
+                newControlsModel =
+                    { controlsModel
+                        | play = model.audioPlayer.playing
+                        , pause = not model.audioPlayer.playing
+                    }
             in
-                ( { model | controls = controlsModel }
+                ( { model | controls = newControlsModel }
                 , Cmd.map MsgControls controlsCmds
                 )
 

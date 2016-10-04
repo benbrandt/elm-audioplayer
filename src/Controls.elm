@@ -45,7 +45,7 @@ type Msg
 init : ( Model, Cmd Msg )
 init =
     { play = True
-    , pause = True
+    , pause = False
     , slower = True
     , faster = True
     , resetPlayback = True
