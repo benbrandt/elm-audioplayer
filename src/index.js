@@ -2,7 +2,7 @@ require('./main.css');
 
 var Elm = require('./Main.elm');
 
-var root  = document.getElementById('root');
+var root  = document.getElementById('elm-audioplayer');
 
 var app = Elm.Main.embed(root);
 
@@ -11,8 +11,18 @@ app.ports.setCurrentTime.subscribe(function (time) {
   audio.currentTime = time;
 });
 
-app.ports.toggleAudioState.subscribe(function (playing) {
+app.ports.setPlaybackRate.subscribe(function(rate) {
   var audio = document.getElementById('elm-audio-file');
-  playing ? audio.play() : audio.pause();
+  audio.playbackRate = rate;
+});
+
+app.ports.play.subscribe(function() {
+  var audio = document.getElementById('elm-audio-file');
+  audio.play();
+});
+
+app.ports.pause.subscribe(function() {
+  var audio = document.getElementById('elm-audio-file');
+  audio.pause();
 });
 
