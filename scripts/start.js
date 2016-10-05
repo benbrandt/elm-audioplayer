@@ -7,7 +7,7 @@ const opn = require('opn');
 
 process.env.NODE_ENV = 'development';
 
-function clear () {
+function clear() {
   console.log('\x1Bc');
 }
 
@@ -17,22 +17,21 @@ if (pathExists.sync('elm-package.json') === false) {
 }
 
 // http://webpack.github.io/docs/node.js-api.html#the-long-way
-var compiler = webpack(config);
-var port = 3000;
+const compiler = webpack(config);
+const port = 3000;
 
-compiler.plugin('invalid', function () {
+compiler.plugin('invalid', () => {
   clear();
   console.log('Compiling...');
 });
 
-compiler.plugin('done', function (stats) {
+compiler.plugin('done', (stats) => {
   clear();
 
-  var hasErrors = stats.hasErrors();
-  var hasWarnings = stats.hasWarnings();
+  const hasErrors = stats.hasErrors();
+  const hasWarnings = stats.hasWarnings();
 
   if (!hasErrors && !hasWarnings) {
-
     console.log(chalk.green('Compiled successfully!'));
     console.log('\nThe app is running at:');
     console.log('\n    ' + chalk.cyan('http://localhost:' + port + '/'));
@@ -44,9 +43,9 @@ compiler.plugin('done', function (stats) {
   if (hasErrors) {
     console.log(chalk.red('Compilation failed.\n'));
 
-    var json = stats.toJson({}, true);
+    const json = stats.toJson({}, true);
 
-    json.errors.forEach(function (message) {
+    json.errors.forEach((message) => {
       console.log(message);
       console.log();
     });
@@ -57,16 +56,15 @@ const devServer = new WebpackDevServer(compiler, {
   hot: true,
   inline: true,
   publicPath: '/',
-  quiet: true
+  quiet: true,
 });
 
 // Launch WebpackDevServer.
-devServer.listen(port, function (err) {
+devServer.listen(port, (err) => {
   if (err) {
     return console.log(err);
   }
 });
 
-opn('http://localhost:' + port + '/');
-
+opn(`http://localhost:${port}/`);
 
