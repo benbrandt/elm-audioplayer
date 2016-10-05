@@ -1,18 +1,47 @@
 module Main exposing (..)
 
-import AudioPlayer
-import Controls
-import Html exposing (Html, div, text)
+import Html
+    exposing
+        ( Html
+        , Attribute
+        , audio
+        , button
+        , div
+        , text
+        )
 import Html.App
-import Html.Attributes exposing (class)
+import Html.Attributes
+    exposing
+        ( class
+        , classList
+        , controls
+        , id
+        , src
+        , style
+        , type'
+        )
+import Html.Events exposing (on, onClick)
+import Json.Decode as Json exposing (Decoder)
+import Ports
 
 
 -- MODEL
 
 
 type alias Model =
-    { audioPlayer : AudioPlayer.Model
-    , controls : Controls.Model
+    { mediaUrl : String
+    , mediaType : String
+    , playing : Bool
+    , currentTime : Float
+    , duration : Float
+    , playbackRate : Float
+    , playbackStep : Float
+    , playheadPosition : Float
+    , playButton : Bool
+    , pauseButton : Bool
+    , slowerButton : Bool
+    , fasterButton : Bool
+    , resetPlaybackButton : Bool
     }
 
 
@@ -21,8 +50,15 @@ type alias Model =
 
 
 type Msg
-    = MsgAudioPlayer AudioPlayer.Msg
-    | MsgControls Controls.Msg
+    = TimeUpdate Float
+    | SetDuration Float
+    | Playing
+    | Paused
+    | Play
+    | Pause
+    | Slower
+    | Faster
+    | ResetPlayback
 
 
 
@@ -31,21 +67,21 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    let
-        ( audioPlayerInit, audioPlayerCmds ) =
-            AudioPlayer.init
-
-        ( controlsInit, controlsCmds ) =
-            Controls.init
-    in
-        { audioPlayer = audioPlayerInit
-        , controls = controlsInit
-        }
-            ! [ Cmd.batch
-                    [ Cmd.map MsgAudioPlayer audioPlayerCmds
-                    , Cmd.map MsgControls controlsCmds
-                    ]
-              ]
+    { mediaUrl = "https://mdn.mozillademos.org/files/2587/AudioTest (1).ogg"
+    , mediaType = "audio/ogg"
+    , playing = False
+    , currentTime = 0.0
+    , duration = 0.0
+    , playbackRate = 1.0
+    , playbackStep = 0.1
+    , playheadPosition = 0.0
+    , playButton = True
+    , pauseButton = False
+    , slowerButton = True
+    , fasterButton = True
+    , resetPlaybackButton = True
+    }
+        ! []
 
 
 
@@ -55,38 +91,68 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        MsgAudioPlayer msg' ->
+        TimeUpdate time ->
+            ( { model
+                | currentTime = time
+                , playheadPosition = updatePlayhead time model.duration
+              }
+            , Cmd.none
+            )
+
+        SetDuration duration ->
+            ( { model | duration = duration }, Cmd.none )
+
+        Playing ->
+            ( { model
+                | playing = True
+                , playButton = False
+                , pauseButton = True
+              }
+            , Cmd.none
+            )
+
+        Paused ->
+            ( { model
+                | playing = False
+                , playButton = True
+                , pauseButton = False
+              }
+            , Cmd.none
+            )
+
+        Play ->
+            ( model, Ports.playIt )
+
+        Pause ->
+            ( model, Ports.pauseIt )
+
+        Slower ->
             let
-                ( audioPlayerModel, audioPlayerCmds ) =
-                    AudioPlayer.update msg' model.audioPlayer
+                newPlaybackRate =
+                    model.playbackRate - model.playbackStep
             in
-                ( { model | audioPlayer = audioPlayerModel }
-                , Cmd.map MsgAudioPlayer audioPlayerCmds
+                ( { model | playbackRate = newPlaybackRate }
+                , Ports.setPlaybackRate
+                    newPlaybackRate
                 )
 
-        MsgControls msg' ->
+        Faster ->
             let
-                ( controlsModel, controlsCmds ) =
-                    Controls.update msg' model.controls
-
-                playing =
-                    if
-                        model.audioPlayer.currentTime
-                            == model.audioPlayer.duration
-                    then
-                        True
-                    else
-                        model.audioPlayer.playing
-
-                newControlsModel =
-                    { controlsModel
-                        | play = playing
-                        , pause = not playing
-                    }
+                newPlaybackRate =
+                    model.playbackRate + model.playbackStep
             in
-                ( { model | controls = newControlsModel }
-                , Cmd.map MsgControls controlsCmds
+                ( { model | playbackRate = newPlaybackRate }
+                , Ports.setPlaybackRate
+                    newPlaybackRate
                 )
+
+        ResetPlayback ->
+            ( { model | playbackRate = 1 }, Ports.setPlaybackRate 1 )
+
+
+updatePlayhead : Float -> Float -> Float
+updatePlayhead currentTime duration =
+    currentTime / duration * 100
 
 
 
@@ -99,16 +165,90 @@ subscriptions model =
 
 
 
+-- JSON Decoders
+
+
+onEnded : msg -> Attribute msg
+onEnded msg =
+    on "ended" (Json.succeed msg)
+
+
+onLoadedMetadata : (Float -> msg) -> Attribute msg
+onLoadedMetadata msg =
+    on "loadedmetadata" (Json.map msg targetDuration)
+
+
+onPause : msg -> Attribute msg
+onPause msg =
+    on "pause" (Json.succeed msg)
+
+
+onPlaying : msg -> Attribute msg
+onPlaying msg =
+    on "play" (Json.succeed msg)
+
+
+onTimeUpdate : (Float -> msg) -> Attribute msg
+onTimeUpdate msg =
+    on "timeupdate" (Json.map msg targetCurrentTime)
+
+
+targetCurrentTime : Decoder Float
+targetCurrentTime =
+    Json.at [ "target", "currentTime" ] Json.float
+
+
+targetDuration : Decoder Float
+targetDuration =
+    Json.at [ "target", "duration" ] Json.float
+
+
+
 -- VIEW
 
 
 view : Model -> Html Msg
 view model =
     div [ class "player-wrapper" ]
-        [ Html.App.map MsgAudioPlayer (AudioPlayer.view model.audioPlayer)
-        , Html.App.map MsgControls (Controls.view model.controls)
+        [ audio
+            [ id "elm-audio-file"
+            , src model.mediaUrl
+            , type' model.mediaType
+            , onLoadedMetadata SetDuration
+            , onTimeUpdate TimeUpdate
+            , onPause Paused
+            , onPlaying Playing
+            , onEnded Paused
+            ]
+            []
+        , div [ class "controls" ]
+            [ controlButton model.playButton Play "Play"
+            , controlButton model.pauseButton Pause "Pause"
+            , controlButton model.slowerButton Slower "Slower"
+            , controlButton model.fasterButton Faster "Faster"
+            , controlButton model.resetPlaybackButton ResetPlayback "Reset playback"
+            , div [ class "timeline" ]
+                [ div
+                    [ class "playhead"
+                    , style [ ( "left", toString model.playheadPosition ++ "%" ) ]
+                    ]
+                    []
+                ]
+            ]
         , text (toString model)
         ]
+
+
+controlButton : Bool -> Msg -> String -> Html Msg
+controlButton display msg label =
+    if display then
+        button [ onClick msg ] [ text label ]
+    else
+        text ""
+
+
+
+-- MAIN
 
 
 main : Program Never
