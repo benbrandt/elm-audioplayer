@@ -48,7 +48,7 @@ module.exports = {
         exclude: [/elm-stuff/, /node_modules/],
         loader: 'babel',
         query: {
-          presets: ['react-app'],
+          presets: ['latest'],
         },
       },
       {
