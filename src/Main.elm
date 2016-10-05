@@ -23,6 +23,7 @@ import Html.Attributes
 import Html.Events exposing (on, onClick)
 import Json.Decode as Json exposing (Decoder)
 import Ports
+import String
 
 
 -- MODEL
@@ -209,7 +210,7 @@ targetDuration =
 
 view : Model -> Html Msg
 view model =
-    div [ class "player-wrapper" ]
+    div [ class "player" ]
         [ audio
             [ id "elm-audio-file"
             , src model.mediaUrl
@@ -224,9 +225,9 @@ view model =
         , div [ class "controls" ]
             [ controlButton model.playButton Play "Play"
             , controlButton model.pauseButton Pause "Pause"
-            , controlButton model.slowerButton Slower "Slower"
-            , controlButton model.fasterButton Faster "Faster"
-            , controlButton model.resetPlaybackButton ResetPlayback "Reset playback"
+            , controlButton model.slowerButton Slower "-"
+            , controlButton model.fasterButton Faster "+"
+            , controlButton model.resetPlaybackButton ResetPlayback "Reset"
             , div [ class "timeline" ]
                 [ div
                     [ class "playhead"
@@ -234,15 +235,61 @@ view model =
                     ]
                     []
                 ]
+            , div [ class "time" ]
+                [ text
+                    ((model.currentTime
+                        |> round
+                        |> formatTime
+                     )
+                        ++ " | "
+                        ++ (model.duration
+                                |> round
+                                |> formatTime
+                           )
+                    )
+                ]
             ]
-        , text (toString model)
         ]
+
+
+formatTime : Int -> String
+formatTime time =
+    let
+        hours =
+            time // 3600 |> padTimeString
+
+        minutes =
+            time % 3600 // 60 |> padTimeString
+
+        seconds =
+            time % 3600 % 60 |> padTimeString
+
+        timeList =
+            if hours == "00" then
+                [ minutes, seconds ]
+            else
+                [ hours, minutes, seconds ]
+    in
+        String.join ":" timeList
+
+
+padTimeString : Int -> String
+padTimeString timeUnit =
+    String.padLeft 2 '0' (toString timeUnit)
 
 
 controlButton : Bool -> Msg -> String -> Html Msg
 controlButton display msg label =
     if display then
-        button [ onClick msg ] [ text label ]
+        button
+            [ class
+                (msg
+                    |> toString
+                    |> String.toLower
+                )
+            , onClick msg
+            ]
+            [ text label ]
     else
         text ""
 
