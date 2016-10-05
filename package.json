@@ -10,13 +10,15 @@
     "repl": "elm-repl",
     "reactor": "elm-reactor"
   },
-  "devDependencies": {
+  "dependencies": {
+    "autoprefixer": "^6.5.0",
     "chalk": "^1.1.3",
     "clean-webpack-plugin": "^0.1.10",
     "css-loader": "0.25.0",
     "elm": "^0.17.1",
     "elm-hot-loader": "^0.3.3",
     "elm-webpack-loader": "^3.0.5",
+    "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.9.0",
     "html-webpack-plugin": "^2.22.0",
     "install": "0.8.1",
