@@ -1,45 +1,39 @@
-#elm-audioplayer .audioplayer {
+#elm-audioplayer .player {
   border-top: solid;
   bottom: 0;
   height: 60px;
   left: 0;
-  position: absolute;
+  position: fixed;
   width: 100%;
+  z-index: 100;
+}
+
+#elm-audioplayer .controls {
+  align-items: center;
+  display: flex;
+  height: 60px;
 }
 
 #elm-audioplayer .play {
-  background-image: url('http://www.alexkatz.me/codepen/images/play.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  border: 0;
-  float: left;
-  height: 60px;
-  outline: none;
-  width: 15%;
 }
 
 #elm-audioplayer .pause {
-  background-image: url('http://www.alexkatz.me/codepen/images/pause.png');
 }
 
 #elm-audioplayer .timeline {
   background: rgba(0, 0, 0, .3);
-  border-radius: 15px;
-  float: left;
-  height: 20px;
-  margin-left: 2.5%;
-  margin-top: 20px;
+  flex-basis: 60%;
+  height: 10px;
+  margin: 0 8px;
   position: relative;
-  width: 80%;
 }
 
 #elm-audioplayer .playhead {
   background: #000;
-  border-radius: 50%;
   left: 0;
   height: 18px;
   position: absolute;
-  top: 1px;
-  width: 18px;
+  top: -4px;
+  transform: translateX(-50%);
+  width: 8px;
 }
