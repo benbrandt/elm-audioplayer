@@ -69,10 +69,19 @@ update msg model =
                 ( controlsModel, controlsCmds ) =
                     Controls.update msg' model.controls
 
+                playing =
+                    if
+                        model.audioPlayer.currentTime
+                            == model.audioPlayer.duration
+                    then
+                        True
+                    else
+                        model.audioPlayer.playing
+
                 newControlsModel =
                     { controlsModel
-                        | play = model.audioPlayer.playing
-                        , pause = not model.audioPlayer.playing
+                        | play = playing
+                        , pause = not playing
                     }
             in
                 ( { model | controls = newControlsModel }
