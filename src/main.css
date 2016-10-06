@@ -12,6 +12,7 @@
   align-items: center;
   display: flex;
   height: 60px;
+  justify-content: space-around;
 }
 
 #elm-audioplayer .play {
