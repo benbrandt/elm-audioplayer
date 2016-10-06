@@ -21,6 +21,7 @@ import Html.Attributes
         , type'
         )
 import Html.Events exposing (on, onClick)
+import Html.Lazy exposing (lazy, lazy2, lazy3)
 import Json.Decode as Json exposing (Decoder)
 import Ports
 import String
@@ -211,45 +212,82 @@ targetDuration =
 view : Model -> Html Msg
 view model =
     div [ class "player" ]
-        [ audio
-            [ id "elm-audio-file"
-            , src model.mediaUrl
-            , type' model.mediaType
-            , onLoadedMetadata SetDuration
-            , onTimeUpdate TimeUpdate
-            , onPause Paused
-            , onPlaying Playing
-            , onEnded Paused
-            ]
-            []
+        [ lazy2 viewAudioFile model.mediaUrl model.mediaType
         , div [ class "controls" ]
-            [ controlButton model.playButton Play "Play"
-            , controlButton model.pauseButton Pause "Pause"
-            , controlButton model.slowerButton Slower "-"
-            , controlButton model.fasterButton Faster "+"
-            , controlButton model.resetPlaybackButton ResetPlayback "Reset"
-            , div [ class "timeline" ]
-                [ div
-                    [ class "playhead"
-                    , style [ ( "left", toString model.playheadPosition ++ "%" ) ]
-                    ]
-                    []
+            [ lazy3 controlButton model.playButton Play "Play"
+            , lazy3 controlButton model.pauseButton Pause "Pause"
+            , div [ class "playback" ]
+                [ lazy3 controlButton model.slowerButton Slower "-"
+                , lazy3 controlButton model.resetPlaybackButton ResetPlayback "Reset"
+                , lazy3 controlButton model.fasterButton Faster "+"
                 ]
-            , div [ class "time" ]
-                [ text
-                    ((model.currentTime
-                        |> round
-                        |> formatTime
-                     )
-                        ++ " | "
-                        ++ (model.duration
-                                |> round
-                                |> formatTime
-                           )
-                    )
-                ]
+            , lazy viewTimeline model.playheadPosition
+            , lazy2 viewClock model.currentTime model.duration
             ]
         ]
+
+
+viewAudioFile : String -> String -> Html Msg
+viewAudioFile url mediaType =
+    audio
+        [ id "elm-audio-file"
+        , src url
+        , type' mediaType
+        , onLoadedMetadata SetDuration
+        , onTimeUpdate TimeUpdate
+        , onPause Paused
+        , onPlaying Playing
+        , onEnded Paused
+        ]
+        []
+
+
+viewTimeline : Float -> Html Msg
+viewTimeline position =
+    div [ class "timeline" ]
+        [ div
+            [ class "playhead"
+            , style [ ( "left", toString position ++ "%" ) ]
+            ]
+            []
+        ]
+
+
+viewClock : Float -> Float -> Html Msg
+viewClock currentTime duration =
+    div [ class "time" ]
+        [ text
+            ((currentTime
+                |> round
+                |> formatTime
+             )
+                ++ " | "
+                ++ (duration
+                        |> round
+                        |> formatTime
+                   )
+            )
+        ]
+
+
+controlButton : Bool -> Msg -> String -> Html Msg
+controlButton display msg label =
+    if display then
+        button
+            [ class
+                (msg
+                    |> toString
+                    |> String.toLower
+                )
+            , onClick msg
+            ]
+            [ text label ]
+    else
+        text ""
+
+
+
+-- UTILITY FUNCTIONS
 
 
 formatTime : Int -> String
@@ -276,22 +314,6 @@ formatTime time =
 padTimeString : Int -> String
 padTimeString timeUnit =
     String.padLeft 2 '0' (toString timeUnit)
-
-
-controlButton : Bool -> Msg -> String -> Html Msg
-controlButton display msg label =
-    if display then
-        button
-            [ class
-                (msg
-                    |> toString
-                    |> String.toLower
-                )
-            , onClick msg
-            ]
-            [ text label ]
-    else
-        text ""
 
 
 
