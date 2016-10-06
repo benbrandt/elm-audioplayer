@@ -31,11 +31,11 @@ import String
 
 
 type alias Model =
-    { mediaUrl : String
-    , mediaType : String
-    , playing : Bool
+    { mediaUrl : Maybe String
+    , mediaType : Maybe String
     , currentTime : Float
     , duration : Float
+    , playing : Bool
     , playbackRate : Float
     , playbackStep : Float
     , playheadPosition : Float
@@ -69,11 +69,11 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    { mediaUrl = "https://mdn.mozillademos.org/files/2587/AudioTest (1).ogg"
-    , mediaType = "audio/ogg"
-    , playing = False
+    { mediaUrl = Nothing
+    , mediaType = Nothing
     , currentTime = 0.0
     , duration = 0.0
+    , playing = False
     , playbackRate = 1.0
     , playbackStep = 0.1
     , playheadPosition = 0.0
@@ -227,19 +227,24 @@ view model =
         ]
 
 
-viewAudioFile : String -> String -> Html Msg
+viewAudioFile : Maybe String -> Maybe String -> Html Msg
 viewAudioFile url mediaType =
-    audio
-        [ id "elm-audio-file"
-        , src url
-        , type' mediaType
-        , onLoadedMetadata SetDuration
-        , onTimeUpdate TimeUpdate
-        , onPause Paused
-        , onPlaying Playing
-        , onEnded Paused
-        ]
-        []
+    case ( url, mediaType ) of
+        ( Just url, Just mediaType ) ->
+            audio
+                [ id "elm-audio-file"
+                , src url
+                , type' mediaType
+                , onLoadedMetadata SetDuration
+                , onTimeUpdate TimeUpdate
+                , onPause Paused
+                , onPlaying Playing
+                , onEnded Paused
+                ]
+                []
+
+        _ ->
+            audio [ id "elm-audio-file" ] []
 
 
 viewTimeline : Float -> Html Msg
