@@ -1,10 +1,10 @@
 require('./main.css');
 
-const Elm = require('./Main.elm');
+const Elm = require('./AudioPlayer.elm');
 
 const root = document.getElementById('elm-audioplayer');
 
-const app = Elm.Main.embed(root);
+const app = Elm.AudioPlayer.embed(root);
 
 app.ports.setCurrentTime.subscribe((time) => {
   const audio = document.getElementById('elm-audio-file');

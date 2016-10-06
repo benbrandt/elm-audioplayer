@@ -1,4 +1,4 @@
-module Main exposing (..)
+module AudioPlayer exposing (..)
 
 import Html
     exposing
