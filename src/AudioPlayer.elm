@@ -1,27 +1,10 @@
 port module AudioPlayer exposing (..)
 
-import Html
-    exposing
-        ( Html
-        , Attribute
-        , audio
-        , button
-        , div
-        , text
-        )
+import Html exposing (Html, Attribute)
 import Html.App
 import Html.Attributes
-    exposing
-        ( class
-        , classList
-        , controls
-        , id
-        , src
-        , style
-        , type'
-        )
-import Html.Events exposing (on, onClick)
-import Html.Lazy exposing (lazy, lazy2, lazy3)
+import Html.Events
+import Html.Lazy
 import Json.Decode as Json exposing (Decoder)
 import String
 
@@ -222,27 +205,27 @@ subscriptions model =
 
 onEnded : msg -> Attribute msg
 onEnded msg =
-    on "ended" (Json.succeed msg)
+    Html.Events.on "ended" (Json.succeed msg)
 
 
 onLoadedMetadata : (Float -> msg) -> Attribute msg
 onLoadedMetadata msg =
-    on "loadedmetadata" (Json.map msg targetDuration)
+    Html.Events.on "loadedmetadata" (Json.map msg targetDuration)
 
 
 onPause : msg -> Attribute msg
 onPause msg =
-    on "pause" (Json.succeed msg)
+    Html.Events.on "pause" (Json.succeed msg)
 
 
 onPlaying : msg -> Attribute msg
 onPlaying msg =
-    on "play" (Json.succeed msg)
+    Html.Events.on "play" (Json.succeed msg)
 
 
 onTimeUpdate : (Float -> msg) -> Attribute msg
 onTimeUpdate msg =
-    on "timeupdate" (Json.map msg targetCurrentTime)
+    Html.Events.on "timeupdate" (Json.map msg targetCurrentTime)
 
 
 targetCurrentTime : Decoder Float
@@ -261,14 +244,14 @@ targetDuration =
 
 view : Model -> Html Msg
 view model =
-    div [ class "player" ]
-        [ lazy viewAudioFile model.audioFile
-        , div [ class "controls" ]
-            [ lazy3 controlButton (not model.playing) Play "Play"
-            , lazy3 controlButton model.playing Pause "Pause"
-            , lazy2 viewPlaybackControls model.playbackRate model.controlButtons
-            , lazy viewTimeline model.playheadPosition
-            , lazy2 viewClock model.currentTime model.duration
+    Html.div [ Html.Attributes.class "player" ]
+        [ Html.Lazy.lazy viewAudioFile model.audioFile
+        , Html.div [ Html.Attributes.class "controls" ]
+            [ Html.Lazy.lazy3 controlButton (not model.playing) Play "Play"
+            , Html.Lazy.lazy3 controlButton model.playing Pause "Pause"
+            , Html.Lazy.lazy2 viewPlaybackControls model.playbackRate model.controlButtons
+            , Html.Lazy.lazy viewTimeline model.playheadPosition
+            , Html.Lazy.lazy2 viewClock model.currentTime model.duration
             ]
         ]
 
@@ -277,10 +260,10 @@ viewAudioFile : AudioFile -> Html Msg
 viewAudioFile file =
     case ( file.mediaUrl, file.mediaType ) of
         ( Just url, Just mediaType ) ->
-            audio
-                [ id "elm-audio-file"
-                , src url
-                , type' mediaType
+            Html.audio
+                [ Html.Attributes.id "elm-audio-file"
+                , Html.Attributes.src url
+                , Html.Attributes.type' mediaType
                 , onLoadedMetadata SetDuration
                 , onTimeUpdate TimeUpdate
                 , onPause Paused
@@ -290,24 +273,24 @@ viewAudioFile file =
                 []
 
         _ ->
-            audio [ id "elm-audio-file" ] []
+            Html.audio [ Html.Attributes.id "elm-audio-file" ] []
 
 
 viewTimeline : Float -> Html Msg
 viewTimeline position =
-    div [ class "timeline" ]
-        [ div
-            [ class "playhead"
-            , style [ ( "left", toString position ++ "%" ) ]
-            ]
-            []
+    Html.input
+        [ Html.Attributes.class "timeline"
+        , Html.Attributes.type' "range"
+        , Html.Attributes.step "0.01"
+        , Html.Attributes.value (toString position)
         ]
+        []
 
 
 viewClock : Float -> Float -> Html Msg
 viewClock currentTime duration =
-    div [ class "time" ]
-        [ text
+    Html.div [ Html.Attributes.class "time" ]
+        [ Html.text
             ((currentTime
                 |> round
                 |> formatTime
@@ -323,7 +306,7 @@ viewClock currentTime duration =
 
 viewPlaybackControls : Float -> Controls -> Html Msg
 viewPlaybackControls playbackRate controlButtons =
-    div [ class "playback" ]
+    Html.div [ Html.Attributes.class "playback" ]
         [ controlButton controlButtons.slowerButton Slower "-"
         , controlButton controlButtons.resetPlaybackButton
             ResetPlayback
@@ -335,17 +318,17 @@ viewPlaybackControls playbackRate controlButtons =
 controlButton : Bool -> Msg -> String -> Html Msg
 controlButton display msg label =
     if display then
-        button
-            [ class
+        Html.button
+            [ Html.Attributes.class
                 (msg
                     |> toString
                     |> String.toLower
                 )
-            , onClick msg
+            , Html.Events.onClick msg
             ]
-            [ text label ]
+            [ Html.text label ]
     else
-        text ""
+        Html.text ""
 
 
 
