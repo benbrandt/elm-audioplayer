@@ -30,20 +30,28 @@ import String
 -- MODEL
 
 
-type alias Model =
+type alias AudioFile =
     { mediaUrl : Maybe String
     , mediaType : Maybe String
+    }
+
+
+type alias Controls =
+    { slowerButton : Bool
+    , fasterButton : Bool
+    , resetPlaybackButton : Bool
+    }
+
+
+type alias Model =
+    { audioFile : AudioFile
     , currentTime : Float
     , duration : Float
     , playing : Bool
     , playbackRate : Float
     , playbackStep : Float
     , playheadPosition : Float
-    , playButton : Bool
-    , pauseButton : Bool
-    , slowerButton : Bool
-    , fasterButton : Bool
-    , resetPlaybackButton : Bool
+    , controlButtons : Controls
     }
 
 
@@ -69,19 +77,21 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    { mediaUrl = Nothing
-    , mediaType = Nothing
+    { audioFile =
+        { mediaUrl = Nothing
+        , mediaType = Nothing
+        }
     , currentTime = 0.0
     , duration = 0.0
     , playing = False
     , playbackRate = 1.0
     , playbackStep = 0.1
     , playheadPosition = 0.0
-    , playButton = True
-    , pauseButton = False
-    , slowerButton = True
-    , fasterButton = True
-    , resetPlaybackButton = True
+    , controlButtons =
+        { slowerButton = True
+        , fasterButton = True
+        , resetPlaybackButton = True
+        }
     }
         ! []
 
@@ -105,22 +115,10 @@ update msg model =
             ( { model | duration = duration }, Cmd.none )
 
         Playing ->
-            ( { model
-                | playing = True
-                , playButton = False
-                , pauseButton = True
-              }
-            , Cmd.none
-            )
+            ( { model | playing = True }, Cmd.none )
 
         Paused ->
-            ( { model
-                | playing = False
-                , playButton = True
-                , pauseButton = False
-              }
-            , Cmd.none
-            )
+            ( { model | playing = False }, Cmd.none )
 
         Play ->
             ( model, Ports.playIt )
@@ -212,14 +210,14 @@ targetDuration =
 view : Model -> Html Msg
 view model =
     div [ class "player" ]
-        [ lazy2 viewAudioFile model.mediaUrl model.mediaType
+        [ lazy viewAudioFile model.audioFile
         , div [ class "controls" ]
-            [ lazy3 controlButton model.playButton Play "Play"
-            , lazy3 controlButton model.pauseButton Pause "Pause"
+            [ lazy3 controlButton (not model.playing) Play "Play"
+            , lazy3 controlButton model.playing Pause "Pause"
             , div [ class "playback" ]
-                [ lazy3 controlButton model.slowerButton Slower "-"
-                , lazy3 controlButton model.resetPlaybackButton ResetPlayback "Reset"
-                , lazy3 controlButton model.fasterButton Faster "+"
+                [ lazy3 controlButton model.controlButtons.slowerButton Slower "-"
+                , lazy3 controlButton model.controlButtons.resetPlaybackButton ResetPlayback "Reset"
+                , lazy3 controlButton model.controlButtons.fasterButton Faster "+"
                 ]
             , lazy viewTimeline model.playheadPosition
             , lazy2 viewClock model.currentTime model.duration
@@ -227,9 +225,9 @@ view model =
         ]
 
 
-viewAudioFile : Maybe String -> Maybe String -> Html Msg
-viewAudioFile url mediaType =
-    case ( url, mediaType ) of
+viewAudioFile : AudioFile -> Html Msg
+viewAudioFile file =
+    case ( file.mediaUrl, file.mediaType ) of
         ( Just url, Just mediaType ) ->
             audio
                 [ id "elm-audio-file"
