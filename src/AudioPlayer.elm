@@ -139,18 +139,26 @@ update msg model =
             let
                 newPlaybackRate =
                     model.playbackRate - model.playbackStep
+
+                validatedRate =
+                    validatePlaybackRate model.playbackRate
+                        newPlaybackRate
             in
-                ( { model | playbackRate = newPlaybackRate }
-                , setPlaybackRate newPlaybackRate
+                ( { model | playbackRate = validatedRate }
+                , setPlaybackRate validatedRate
                 )
 
         Faster ->
             let
                 newPlaybackRate =
                     model.playbackRate + model.playbackStep
+
+                validatedRate =
+                    validatePlaybackRate model.playbackRate
+                        newPlaybackRate
             in
-                ( { model | playbackRate = newPlaybackRate }
-                , setPlaybackRate newPlaybackRate
+                ( { model | playbackRate = validatedRate }
+                , setPlaybackRate validatedRate
                 )
 
         ResetPlayback ->
@@ -160,6 +168,14 @@ update msg model =
 updatePlayhead : Float -> Float -> Float
 updatePlayhead currentTime duration =
     currentTime / duration * 100
+
+
+validatePlaybackRate : Float -> Float -> Float
+validatePlaybackRate currentRate newRate =
+    if (newRate > 0.0 && newRate < 3.0) then
+        newRate
+    else
+        currentRate
 
 
 
