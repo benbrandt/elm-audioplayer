@@ -1,4 +1,4 @@
-module AudioPlayer exposing (..)
+port module AudioPlayer exposing (..)
 
 import Html
     exposing
@@ -23,7 +23,6 @@ import Html.Attributes
 import Html.Events exposing (on, onClick)
 import Html.Lazy exposing (lazy, lazy2, lazy3)
 import Json.Decode as Json exposing (Decoder)
-import Ports
 import String
 
 
@@ -33,6 +32,9 @@ import String
 type alias AudioFile =
     { mediaUrl : Maybe String
     , mediaType : Maybe String
+    , thumbnail : Maybe String
+    , title : Maybe String
+    , artist : Maybe String
     }
 
 
@@ -60,7 +62,8 @@ type alias Model =
 
 
 type Msg
-    = TimeUpdate Float
+    = FileUpdate AudioFile
+    | TimeUpdate Float
     | SetDuration Float
     | Playing
     | Paused
@@ -80,6 +83,9 @@ init =
     { audioFile =
         { mediaUrl = Nothing
         , mediaType = Nothing
+        , thumbnail = Nothing
+        , title = Nothing
+        , artist = Nothing
         }
     , currentTime = 0.0
     , duration = 0.0
@@ -103,6 +109,9 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        FileUpdate file ->
+            ( { model | audioFile = file }, playIt )
+
         TimeUpdate time ->
             ( { model
                 | currentTime = time
@@ -121,10 +130,10 @@ update msg model =
             ( { model | playing = False }, Cmd.none )
 
         Play ->
-            ( model, Ports.playIt )
+            ( model, playIt )
 
         Pause ->
-            ( model, Ports.pauseIt )
+            ( model, pauseIt )
 
         Slower ->
             let
@@ -132,8 +141,7 @@ update msg model =
                     model.playbackRate - model.playbackStep
             in
                 ( { model | playbackRate = newPlaybackRate }
-                , Ports.setPlaybackRate
-                    newPlaybackRate
+                , setPlaybackRate newPlaybackRate
                 )
 
         Faster ->
@@ -142,12 +150,11 @@ update msg model =
                     model.playbackRate + model.playbackStep
             in
                 ( { model | playbackRate = newPlaybackRate }
-                , Ports.setPlaybackRate
-                    newPlaybackRate
+                , setPlaybackRate newPlaybackRate
                 )
 
         ResetPlayback ->
-            ( { model | playbackRate = 1 }, Ports.setPlaybackRate 1 )
+            ( { model | playbackRate = 1 }, setPlaybackRate 1 )
 
 
 updatePlayhead : Float -> Float -> Float
@@ -156,12 +163,41 @@ updatePlayhead currentTime duration =
 
 
 
+-- PORTS
+
+
+port setCurrentTime : Float -> Cmd msg
+
+
+port setPlaybackRate : Float -> Cmd msg
+
+
+port play : () -> Cmd msg
+
+
+port pause : () -> Cmd msg
+
+
+port updateAudioFile : (AudioFile -> msg) -> Sub msg
+
+
+playIt : Cmd msg
+playIt =
+    play ()
+
+
+pauseIt : Cmd msg
+pauseIt =
+    pause ()
+
+
+
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    updateAudioFile FileUpdate
 
 
 

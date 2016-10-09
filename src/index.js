@@ -6,6 +6,34 @@ const Elm = require('./AudioPlayer.elm');
 const root = document.getElementById('elm-audioplayer');
 const app = Elm.AudioPlayer.embed(root);
 
+// Send audio files to elm audio player
+const audioFiles = document.getElementsByClassName('elm-audioplayer-media');
+
+// Update audio file in audioplayer
+function sendAudioData(event) {
+  event.preventDefault();
+
+  // Get File Attributes
+  const mediaUrl = this.getAttribute('href');
+  const mediaType = this.getAttribute('data-type');
+  const thumbnail = this.getAttribute('data-thumbnail');
+  const title = this.getAttribute('data-title');
+  const artist = this.getAttribute('data-album');
+
+  // Send to Elm
+  app.ports.updateAudioFile.send({
+    mediaUrl,
+    mediaType,
+    thumbnail,
+    title,
+    artist,
+  });
+}
+
+for (let i = 0; i < audioFiles.length; i += 1) {
+  audioFiles[i].addEventListener('click', sendAudioData);
+}
+
 // Subscribe to change in playhead messages
 app.ports.setCurrentTime.subscribe((time) => {
   const audio = document.getElementById('elm-audio-file');
