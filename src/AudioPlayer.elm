@@ -91,7 +91,7 @@ init =
     , duration = 0.0
     , playing = False
     , playbackRate = 1.0
-    , playbackStep = 0.1
+    , playbackStep = 0.25
     , playheadPosition = 0.0
     , controlButtons =
         { slowerButton = True
@@ -250,11 +250,7 @@ view model =
         , div [ class "controls" ]
             [ lazy3 controlButton (not model.playing) Play "Play"
             , lazy3 controlButton model.playing Pause "Pause"
-            , div [ class "playback" ]
-                [ lazy3 controlButton model.controlButtons.slowerButton Slower "-"
-                , lazy3 controlButton model.controlButtons.resetPlaybackButton ResetPlayback "Reset"
-                , lazy3 controlButton model.controlButtons.fasterButton Faster "+"
-                ]
+            , lazy2 viewPlaybackControls model.playbackRate model.controlButtons
             , lazy viewTimeline model.playheadPosition
             , lazy2 viewClock model.currentTime model.duration
             ]
@@ -306,6 +302,17 @@ viewClock currentTime duration =
                         |> formatTime
                    )
             )
+        ]
+
+
+viewPlaybackControls : Float -> Controls -> Html Msg
+viewPlaybackControls playbackRate controlButtons =
+    div [ class "playback" ]
+        [ controlButton controlButtons.slowerButton Slower "-"
+        , controlButton controlButtons.resetPlaybackButton
+            ResetPlayback
+            (toString playbackRate ++ "x")
+        , controlButton controlButtons.fasterButton Faster "+"
         ]
 
 
