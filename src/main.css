@@ -19,8 +19,7 @@
 #elm-audioplayer .play,
 #elm-audioplayer .pause,
 #elm-audioplayer .playback,
-#elm-audioplayer .timeline,
-#elm-audioplayer .time,
+#elm-audioplayer .info,
 #elm-audioplayer .logo {
   margin: 0 10px;
 }
@@ -29,20 +28,32 @@
   margin-right: 10px;
 }
 
+#elm-audioplayer .info {
+  align-items: center;
+  display: flex;
+  flex-grow: 1;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
 #elm-audioplayer .timeline {
   background: #ddd;
-  flex-grow: 1;
+  flex-basis: 100%;
   height: 10px;
+  margin: 0 0 10px;
   position: relative;
 }
 
-#elm-audioplayer .playhead {
-  background: #000;
-  height: 18px;
-  left: 0;
-  position: absolute;
-  top: -4px;
-  transform: translateX(-50%);
-  width: 8px;
+#elm-audioplayer .artist {
+  margin-right: 10px;
+}
+
+#elm-audioplayer .title {
+  font-weight: bold;
+}
+
+#elm-audioplayer .time {
+  font-size: 14px;
+  margin-left: 10px;
 }
 

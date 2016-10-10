@@ -18,7 +18,7 @@ function sendAudioData(event) {
   const mediaType = this.getAttribute('data-type');
   const thumbnail = this.getAttribute('data-thumbnail');
   const title = this.getAttribute('data-title');
-  const artist = this.getAttribute('data-album');
+  const artist = this.getAttribute('data-artist');
 
   // Send to Elm
   app.ports.updateAudioFile.send({

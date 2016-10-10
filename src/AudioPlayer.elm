@@ -252,8 +252,11 @@ view model =
             , Html.Lazy.lazy2 viewSpeedControls
                 model.speedControl
                 model.playbackRate
-            , Html.Lazy.lazy2 viewTimeline model.currentTime model.duration
-            , Html.Lazy.lazy2 viewClock model.currentTime model.duration
+            , Html.div [ Html.Attributes.class "info" ]
+                [ Html.Lazy.lazy2 viewTimeline model.currentTime model.duration
+                , Html.Lazy.lazy viewTitle model.audioFile
+                , Html.Lazy.lazy2 viewClock model.currentTime model.duration
+                ]
             , Html.Lazy.lazy2 viewImg model.logo "logo"
             ]
         ]
@@ -277,6 +280,27 @@ viewAudioFile file =
 
         _ ->
             Html.audio [ Html.Attributes.id "elm-audio-file" ] []
+
+
+viewTitle : AudioFile -> Html Msg
+viewTitle file =
+    Html.div []
+        [ viewSpan file.artist "artist"
+        , viewSpan file.title "title"
+        ]
+
+
+viewSpan : Maybe String -> String -> Html Msg
+viewSpan text class =
+    case text of
+        Just text ->
+            if text /= "" then
+                Html.span [ Html.Attributes.class class ] [ Html.text text ]
+            else
+                Html.text ""
+
+        Nothing ->
+            Html.text ""
 
 
 viewPlayButton : Bool -> Html Msg
@@ -318,7 +342,7 @@ viewClock currentTime duration =
                 |> round
                 |> formatTime
              )
-                ++ " | "
+                ++ " / "
                 ++ (duration
                         |> round
                         |> formatTime
