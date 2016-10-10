@@ -21,6 +21,13 @@ type alias AudioFile =
     }
 
 
+type alias UserConfig =
+    { logo : Maybe String
+    , speedControl : Bool
+    , volumeControl : Bool
+    }
+
+
 type alias Model =
     { audioFile : AudioFile
     , currentTime : Float
@@ -28,9 +35,7 @@ type alias Model =
     , playing : Bool
     , playbackRate : Float
     , playbackStep : Float
-    , speedControl : Bool
-    , volumeControl : Bool
-    , logo : Maybe String
+    , userConfig : UserConfig
     }
 
 
@@ -56,8 +61,8 @@ type Msg
 -- INIT
 
 
-init : ( Model, Cmd Msg )
-init =
+init : UserConfig -> ( Model, Cmd Msg )
+init flags =
     { audioFile =
         { mediaUrl = Nothing
         , mediaType = Nothing
@@ -70,9 +75,7 @@ init =
     , playing = False
     , playbackRate = 1.0
     , playbackStep = 0.25
-    , speedControl = True
-    , volumeControl = True
-    , logo = Just "https://unsplash.it/60"
+    , userConfig = flags
     }
         ! []
 
@@ -250,14 +253,14 @@ view model =
             [ Html.Lazy.lazy2 viewImg model.audioFile.thumbnail "thumbnail"
             , Html.Lazy.lazy viewPlayButton model.playing
             , Html.Lazy.lazy2 viewSpeedControls
-                model.speedControl
+                model.userConfig.speedControl
                 model.playbackRate
             , Html.div [ Html.Attributes.class "info" ]
                 [ Html.Lazy.lazy2 viewTimeline model.currentTime model.duration
                 , Html.Lazy.lazy viewTitle model.audioFile
                 , Html.Lazy.lazy2 viewClock model.currentTime model.duration
                 ]
-            , Html.Lazy.lazy2 viewImg model.logo "logo"
+            , Html.Lazy.lazy2 viewImg model.userConfig.logo "logo"
             ]
         ]
 
@@ -415,9 +418,9 @@ padTimeString timeUnit =
 -- MAIN
 
 
-main : Program Never
+main : Program UserConfig
 main =
-    Html.App.program
+    Html.App.programWithFlags
         { init = init
         , update = update
         , subscriptions = subscriptions

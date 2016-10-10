@@ -4,7 +4,11 @@ require('./main.css');
 const Elm = require('./AudioPlayer.elm');
 
 const root = document.getElementById('elm-audioplayer');
-const app = Elm.AudioPlayer.embed(root);
+const app = Elm.AudioPlayer.embed(root, {
+  logo: 'https://unsplash.it/60',
+  speedControl: true,
+  volumeControl: false,
+});
 
 // Send audio files to elm audio player
 const audioFiles = document.getElementsByClassName('elm-audioplayer-media');
