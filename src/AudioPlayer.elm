@@ -248,8 +248,7 @@ view model =
         [ Html.Lazy.lazy viewAudioFile model.audioFile
         , Html.div [ Html.Attributes.class "player" ]
             [ Html.Lazy.lazy2 viewImg model.audioFile.thumbnail "thumbnail"
-            , Html.Lazy.lazy3 controlButton (not model.playing) Play "Play"
-            , Html.Lazy.lazy3 controlButton model.playing Pause "Pause"
+            , Html.Lazy.lazy viewPlayButton model.playing
             , Html.Lazy.lazy2 viewSpeedControls
                 model.speedControl
                 model.playbackRate
@@ -278,6 +277,14 @@ viewAudioFile file =
 
         _ ->
             Html.audio [ Html.Attributes.id "elm-audio-file" ] []
+
+
+viewPlayButton : Bool -> Html Msg
+viewPlayButton playing =
+    if playing then
+        controlButton True Pause "Pause"
+    else
+        controlButton True Play "Play"
 
 
 viewImg : Maybe String -> String -> Html Msg
