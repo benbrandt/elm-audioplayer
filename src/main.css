@@ -20,12 +20,8 @@
   margin: 0 10px 0 20px;
 }
 
-#elm-audioplayer .playback button:first-child {
-  margin-left: 10px;
-}
-
-#elm-audioplayer .playback button:last-child {
-  margin-right: 10px;
+#elm-audioplayer .playback {
+  margin: 0 10px;
 }
 
 #elm-audioplayer .timeline {

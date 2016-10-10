@@ -21,13 +21,6 @@ type alias AudioFile =
     }
 
 
-type alias Controls =
-    { slowerButton : Bool
-    , fasterButton : Bool
-    , resetPlaybackButton : Bool
-    }
-
-
 type alias Model =
     { audioFile : AudioFile
     , currentTime : Float
@@ -35,7 +28,8 @@ type alias Model =
     , playing : Bool
     , playbackRate : Float
     , playbackStep : Float
-    , controlButtons : Controls
+    , speedControl : Bool
+    , volumeControl : Bool
     }
 
 
@@ -75,11 +69,8 @@ init =
     , playing = False
     , playbackRate = 1.0
     , playbackStep = 0.25
-    , controlButtons =
-        { slowerButton = True
-        , fasterButton = True
-        , resetPlaybackButton = True
-        }
+    , speedControl = True
+    , volumeControl = True
     }
         ! []
 
@@ -256,7 +247,9 @@ view model =
         , Html.div [ Html.Attributes.class "controls" ]
             [ Html.Lazy.lazy3 controlButton (not model.playing) Play "Play"
             , Html.Lazy.lazy3 controlButton model.playing Pause "Pause"
-            , Html.Lazy.lazy2 viewPlaybackControls model.playbackRate model.controlButtons
+            , Html.Lazy.lazy2 viewSpeedControls
+                model.speedControl
+                model.playbackRate
             , Html.Lazy.lazy2 viewTimeline model.currentTime model.duration
             , Html.Lazy.lazy2 viewClock model.currentTime model.duration
             ]
@@ -313,15 +306,18 @@ viewClock currentTime duration =
         ]
 
 
-viewPlaybackControls : Float -> Controls -> Html Msg
-viewPlaybackControls playbackRate controlButtons =
-    Html.div [ Html.Attributes.class "playback" ]
-        [ controlButton controlButtons.slowerButton Slower "-"
-        , controlButton controlButtons.resetPlaybackButton
-            ResetPlayback
-            (toString playbackRate ++ "x")
-        , controlButton controlButtons.fasterButton Faster "+"
-        ]
+viewSpeedControls : Bool -> Float -> Html Msg
+viewSpeedControls display playbackRate =
+    if display then
+        Html.div [ Html.Attributes.class "playback" ]
+            [ controlButton display Slower "-"
+            , controlButton display
+                ResetPlayback
+                (toString playbackRate ++ "x")
+            , controlButton display Faster "+"
+            ]
+    else
+        Html.text ""
 
 
 controlButton : Bool -> Msg -> String -> Html Msg
