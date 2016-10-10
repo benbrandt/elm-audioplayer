@@ -30,6 +30,7 @@ type alias Model =
     , playbackStep : Float
     , speedControl : Bool
     , volumeControl : Bool
+    , logo : Maybe String
     }
 
 
@@ -71,6 +72,7 @@ init =
     , playbackStep = 0.25
     , speedControl = True
     , volumeControl = True
+    , logo = Just "https://unsplash.it/60"
     }
         ! []
 
@@ -242,16 +244,18 @@ targetRangeValue =
 
 view : Model -> Html Msg
 view model =
-    Html.div [ Html.Attributes.class "player" ]
+    Html.div []
         [ Html.Lazy.lazy viewAudioFile model.audioFile
-        , Html.div [ Html.Attributes.class "controls" ]
-            [ Html.Lazy.lazy3 controlButton (not model.playing) Play "Play"
+        , Html.div [ Html.Attributes.class "player" ]
+            [ Html.Lazy.lazy2 viewImg model.audioFile.thumbnail "thumbnail"
+            , Html.Lazy.lazy3 controlButton (not model.playing) Play "Play"
             , Html.Lazy.lazy3 controlButton model.playing Pause "Pause"
             , Html.Lazy.lazy2 viewSpeedControls
                 model.speedControl
                 model.playbackRate
             , Html.Lazy.lazy2 viewTimeline model.currentTime model.duration
             , Html.Lazy.lazy2 viewClock model.currentTime model.duration
+            , Html.Lazy.lazy2 viewImg model.logo "logo"
             ]
         ]
 
@@ -274,6 +278,16 @@ viewAudioFile file =
 
         _ ->
             Html.audio [ Html.Attributes.id "elm-audio-file" ] []
+
+
+viewImg : Maybe String -> String -> Html Msg
+viewImg src class =
+    case src of
+        Just src ->
+            Html.img [ Html.Attributes.src src, Html.Attributes.class class ] []
+
+        Nothing ->
+            Html.text ""
 
 
 viewTimeline : Float -> Float -> Html Msg
