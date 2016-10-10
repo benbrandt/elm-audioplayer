@@ -247,7 +247,12 @@ targetRangeValue =
 
 view : Model -> Html Msg
 view model =
-    Html.div []
+    Html.div
+        [ Html.Attributes.classList
+            [ ( "wrapper", True )
+            , ( "open", fileLoaded model.audioFile.mediaUrl )
+            ]
+        ]
         [ Html.Lazy.lazy viewAudioFile model.audioFile
         , Html.div [ Html.Attributes.class "player" ]
             [ Html.Lazy.lazy2 viewImg model.audioFile.thumbnail "thumbnail"
@@ -263,6 +268,16 @@ view model =
             , Html.Lazy.lazy2 viewImg model.userConfig.logo "logo"
             ]
         ]
+
+
+fileLoaded : Maybe String -> Bool
+fileLoaded url =
+    case url of
+        Just url ->
+            True
+
+        Nothing ->
+            False
 
 
 viewAudioFile : AudioFile -> Html Msg

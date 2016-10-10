@@ -4,10 +4,16 @@ require('./main.css');
 const Elm = require('./AudioPlayer.elm');
 
 const root = document.getElementById('elm-audioplayer');
+
+// Get user config values
+const logo = root.getAttribute('data-logo');
+const speedControl = root.getAttribute('data-speedcontrol') === 'true';
+const volumeControl = root.getAttribute('data-volumeControl') === 'true';
+
 const app = Elm.AudioPlayer.embed(root, {
-  logo: 'https://unsplash.it/60',
-  speedControl: true,
-  volumeControl: false,
+  logo,
+  speedControl,
+  volumeControl,
 });
 
 // Send audio files to elm audio player

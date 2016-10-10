@@ -1,12 +1,17 @@
-#elm-audioplayer {
+#elm-audioplayer .wrapper {
   background: #f9f9f9;
   border-top: 3px solid #666;
-  bottom: 0;
+  bottom: -128px;
   font-family: sans-serif;
   left: 0;
   position: fixed;
+  transition: bottom 1s ease;
   width: 100%;
   z-index: 100;
+}
+
+#elm-audioplayer .open {
+  bottom: 0;
 }
 
 #elm-audioplayer .player {
