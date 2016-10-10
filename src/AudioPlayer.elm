@@ -35,7 +35,6 @@ type alias Model =
     , playing : Bool
     , playbackRate : Float
     , playbackStep : Float
-    , playheadPosition : Float
     , controlButtons : Controls
     }
 
@@ -52,6 +51,7 @@ type Msg
     | Paused
     | Play
     | Pause
+    | SetTime Float
     | Slower
     | Faster
     | ResetPlayback
@@ -75,7 +75,6 @@ init =
     , playing = False
     , playbackRate = 1.0
     , playbackStep = 0.25
-    , playheadPosition = 0.0
     , controlButtons =
         { slowerButton = True
         , fasterButton = True
@@ -93,15 +92,15 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FileUpdate file ->
-            ( { model | audioFile = file }, playIt )
+            ( { model
+                | audioFile = file
+                , playing = True
+              }
+            , playIt
+            )
 
         TimeUpdate time ->
-            ( { model
-                | currentTime = time
-                , playheadPosition = updatePlayhead time model.duration
-              }
-            , Cmd.none
-            )
+            ( { model | currentTime = time }, Cmd.none )
 
         SetDuration duration ->
             ( { model | duration = duration }, Cmd.none )
@@ -117,6 +116,9 @@ update msg model =
 
         Pause ->
             ( model, pauseIt )
+
+        SetTime time ->
+            ( model, setCurrentTime time )
 
         Slower ->
             let
@@ -146,11 +148,6 @@ update msg model =
 
         ResetPlayback ->
             ( { model | playbackRate = 1 }, setPlaybackRate 1 )
-
-
-updatePlayhead : Float -> Float -> Float
-updatePlayhead currentTime duration =
-    currentTime / duration * 100
 
 
 validatePlaybackRate : Float -> Float -> Float
@@ -208,6 +205,11 @@ onEnded msg =
     Html.Events.on "ended" (Json.succeed msg)
 
 
+onInputRange : (Float -> msg) -> Attribute msg
+onInputRange msg =
+    Html.Events.on "input" (Json.map msg targetRangeValue)
+
+
 onLoadedMetadata : (Float -> msg) -> Attribute msg
 onLoadedMetadata msg =
     Html.Events.on "loadedmetadata" (Json.map msg targetDuration)
@@ -238,6 +240,11 @@ targetDuration =
     Json.at [ "target", "duration" ] Json.float
 
 
+targetRangeValue : Decoder Float
+targetRangeValue =
+    Json.at [ "target", "valueAsNumber" ] Json.float
+
+
 
 -- VIEW
 
@@ -250,7 +257,7 @@ view model =
             [ Html.Lazy.lazy3 controlButton (not model.playing) Play "Play"
             , Html.Lazy.lazy3 controlButton model.playing Pause "Pause"
             , Html.Lazy.lazy2 viewPlaybackControls model.playbackRate model.controlButtons
-            , Html.Lazy.lazy viewTimeline model.playheadPosition
+            , Html.Lazy.lazy2 viewTimeline model.currentTime model.duration
             , Html.Lazy.lazy2 viewClock model.currentTime model.duration
             ]
         ]
@@ -276,13 +283,15 @@ viewAudioFile file =
             Html.audio [ Html.Attributes.id "elm-audio-file" ] []
 
 
-viewTimeline : Float -> Html Msg
-viewTimeline position =
+viewTimeline : Float -> Float -> Html Msg
+viewTimeline position duration =
     Html.input
         [ Html.Attributes.class "timeline"
         , Html.Attributes.type' "range"
+        , Html.Attributes.max (toString duration)
         , Html.Attributes.step "0.01"
         , Html.Attributes.value (toString position)
+        , onInputRange SetTime
         ]
         []
 
