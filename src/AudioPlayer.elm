@@ -7,6 +7,8 @@ import Html.Events
 import Html.Lazy
 import Json.Decode as Json exposing (Decoder)
 import String
+import Svg exposing (Svg)
+import Svg.Attributes
 
 
 -- MODEL
@@ -303,9 +305,17 @@ viewImg src class =
 viewPlayButton : Bool -> Html Msg
 viewPlayButton playing =
     if playing then
-        controlButton True Pause "Pause"
+        Html.button
+            [ Html.Attributes.class "pause"
+            , Html.Events.onClick Pause
+            ]
+            [ pauseIcon ]
     else
-        controlButton True Play "Play"
+        Html.button
+            [ Html.Attributes.class "play"
+            , Html.Events.onClick Play
+            ]
+            [ playIcon ]
 
 
 viewSpeedControls : Bool -> Float -> Html Msg
@@ -346,6 +356,12 @@ viewTimeline position duration =
         , Html.Attributes.max (toString duration)
         , Html.Attributes.step "0.01"
         , Html.Attributes.value (toString position)
+        , Html.Attributes.style
+            [ ( "background-size"
+              , (toString <| positionPercentage position duration)
+                    ++ "% 100%"
+              )
+            ]
         , onInputRange SetTime
         ]
         []
@@ -390,6 +406,24 @@ viewClock currentTime duration =
 
 
 
+-- SVG ICONS
+
+
+pauseIcon : Svg Msg
+pauseIcon =
+    Svg.svg [ Svg.Attributes.viewBox "0 0 100 100" ]
+        [ Svg.path [ Svg.Attributes.d "M40.53 19.96c-.096 0-.19.015-.282.028v-.03H29.912c-1.195 0-2.164.97-2.164 2.164V77.88c0 1.193.968 2.16 2.162 2.16h10.62c1.194 0 2.162-.967 2.162-2.16V22.126v-.005c0-1.195-.968-2.163-2.16-2.163zM72.25 77.87V22.127l.002-.005c0-1.195-.97-2.163-2.162-2.163-.097 0-.19.015-.283.028v-.03H59.47c-1.194 0-2.163.97-2.163 2.164V77.88c0 1.193.968 2.16 2.162 2.16h10.617c1.194 0 2.162-.967 2.162-2.16v-.01z" ] []
+        ]
+
+
+playIcon : Svg Msg
+playIcon =
+    Svg.svg [ Svg.Attributes.viewBox "0 0 100 100" ]
+        [ Svg.path [ Svg.Attributes.d "M76.982 50c0-.847-.474-1.575-1.167-1.957L26.54 19.595c-.362-.253-.802-.404-1.278-.404-1.24 0-2.244 1.005-2.244 2.244 0 .087.016.17.026.253h-.026v57.13h.026c.127 1.12 1.066 1.99 2.218 1.99.41 0 .787-.116 1.117-.307l.02.035L75.874 51.97l-.02-.035c.67-.388 1.127-1.105 1.127-1.935z" ] []
+        ]
+
+
+
 -- UTILITY FUNCTIONS
 
 
@@ -427,6 +461,11 @@ formatTime time =
 padTimeString : Int -> String
 padTimeString timeUnit =
     String.padLeft 2 '0' (toString timeUnit)
+
+
+positionPercentage : Float -> Float -> Float
+positionPercentage position duration =
+    (position / duration) * 100.0
 
 
 
