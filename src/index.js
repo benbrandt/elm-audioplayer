@@ -25,7 +25,6 @@ function sendAudioData(event) {
 
   // Get File Attributes
   const mediaUrl = this.getAttribute('href');
-  const mediaType = this.getAttribute('data-type');
   const thumbnail = this.getAttribute('data-thumbnail');
   const title = this.getAttribute('data-title');
   const artist = this.getAttribute('data-artist');
@@ -33,7 +32,6 @@ function sendAudioData(event) {
   // Send to Elm
   app.ports.updateAudioFile.send({
     mediaUrl,
-    mediaType,
     thumbnail,
     title,
     artist,

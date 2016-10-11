@@ -16,7 +16,6 @@ import Svg.Attributes
 
 type alias AudioFile =
     { mediaUrl : Maybe String
-    , mediaType : Maybe String
     , thumbnail : Maybe String
     , title : Maybe String
     , artist : Maybe String
@@ -49,7 +48,6 @@ init : UserConfig -> ( Model, Cmd Msg )
 init flags =
     { audioFile =
         { mediaUrl = Nothing
-        , mediaType = Nothing
         , thumbnail = Nothing
         , title = Nothing
         , artist = Nothing
@@ -274,12 +272,11 @@ view model =
 
 viewAudioFile : AudioFile -> Html Msg
 viewAudioFile file =
-    case ( file.mediaUrl, file.mediaType ) of
-        ( Just url, Just mediaType ) ->
+    case file.mediaUrl of
+        Just url ->
             Html.audio
                 [ Html.Attributes.id "elm-audio-file"
                 , Html.Attributes.src url
-                , Html.Attributes.type' mediaType
                 , onLoadedMetadata SetDuration
                 , onTimeUpdate TimeUpdate
                 , onPause Paused
@@ -288,7 +285,7 @@ viewAudioFile file =
                 ]
                 []
 
-        _ ->
+        Nothing ->
             Html.audio [ Html.Attributes.id "elm-audio-file" ] []
 
 
