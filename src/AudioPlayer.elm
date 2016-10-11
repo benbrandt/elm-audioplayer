@@ -40,24 +40,6 @@ type alias Model =
 
 
 
--- MSG
-
-
-type Msg
-    = FileUpdate AudioFile
-    | TimeUpdate Float
-    | SetDuration Float
-    | Playing
-    | Paused
-    | Play
-    | Pause
-    | SetTime Float
-    | Slower
-    | Faster
-    | ResetPlayback
-
-
-
 -- INIT
 
 
@@ -78,6 +60,24 @@ init flags =
     , userConfig = flags
     }
         ! []
+
+
+
+-- MSG
+
+
+type Msg
+    = FileUpdate AudioFile
+    | TimeUpdate Float
+    | SetDuration Float
+    | Playing
+    | Paused
+    | Play
+    | Pause
+    | SetTime Float
+    | Slower
+    | Faster
+    | ResetPlayback
 
 
 
@@ -270,16 +270,6 @@ view model =
         ]
 
 
-fileLoaded : Maybe String -> Bool
-fileLoaded url =
-    case url of
-        Just url ->
-            True
-
-        Nothing ->
-            False
-
-
 viewAudioFile : AudioFile -> Html Msg
 viewAudioFile file =
     case ( file.mediaUrl, file.mediaType ) of
@@ -300,22 +290,11 @@ viewAudioFile file =
             Html.audio [ Html.Attributes.id "elm-audio-file" ] []
 
 
-viewTitle : AudioFile -> Html Msg
-viewTitle file =
-    Html.div []
-        [ viewSpan file.artist "artist"
-        , viewSpan file.title "title"
-        ]
-
-
-viewSpan : Maybe String -> String -> Html Msg
-viewSpan text class =
-    case text of
-        Just text ->
-            if text /= "" then
-                Html.span [ Html.Attributes.class class ] [ Html.text text ]
-            else
-                Html.text ""
+viewImg : Maybe String -> String -> Html Msg
+viewImg src class =
+    case src of
+        Just src ->
+            Html.img [ Html.Attributes.src src, Html.Attributes.class class ] []
 
         Nothing ->
             Html.text ""
@@ -327,46 +306,6 @@ viewPlayButton playing =
         controlButton True Pause "Pause"
     else
         controlButton True Play "Play"
-
-
-viewImg : Maybe String -> String -> Html Msg
-viewImg src class =
-    case src of
-        Just src ->
-            Html.img [ Html.Attributes.src src, Html.Attributes.class class ] []
-
-        Nothing ->
-            Html.text ""
-
-
-viewTimeline : Float -> Float -> Html Msg
-viewTimeline position duration =
-    Html.input
-        [ Html.Attributes.class "timeline"
-        , Html.Attributes.type' "range"
-        , Html.Attributes.max (toString duration)
-        , Html.Attributes.step "0.01"
-        , Html.Attributes.value (toString position)
-        , onInputRange SetTime
-        ]
-        []
-
-
-viewClock : Float -> Float -> Html Msg
-viewClock currentTime duration =
-    Html.div [ Html.Attributes.class "time" ]
-        [ Html.text
-            ((currentTime
-                |> round
-                |> formatTime
-             )
-                ++ " / "
-                ++ (duration
-                        |> round
-                        |> formatTime
-                   )
-            )
-        ]
 
 
 viewSpeedControls : Bool -> Float -> Html Msg
@@ -399,8 +338,69 @@ controlButton display msg label =
         Html.text ""
 
 
+viewTimeline : Float -> Float -> Html Msg
+viewTimeline position duration =
+    Html.input
+        [ Html.Attributes.class "timeline"
+        , Html.Attributes.type' "range"
+        , Html.Attributes.max (toString duration)
+        , Html.Attributes.step "0.01"
+        , Html.Attributes.value (toString position)
+        , onInputRange SetTime
+        ]
+        []
+
+
+viewTitle : AudioFile -> Html Msg
+viewTitle file =
+    Html.div []
+        [ viewSpan file.artist "artist"
+        , viewSpan file.title "title"
+        ]
+
+
+viewSpan : Maybe String -> String -> Html Msg
+viewSpan text class =
+    case text of
+        Just text ->
+            if text /= "" then
+                Html.span [ Html.Attributes.class class ] [ Html.text text ]
+            else
+                Html.text ""
+
+        Nothing ->
+            Html.text ""
+
+
+viewClock : Float -> Float -> Html Msg
+viewClock currentTime duration =
+    Html.div [ Html.Attributes.class "time" ]
+        [ Html.text
+            ((currentTime
+                |> round
+                |> formatTime
+             )
+                ++ " / "
+                ++ (duration
+                        |> round
+                        |> formatTime
+                   )
+            )
+        ]
+
+
 
 -- UTILITY FUNCTIONS
+
+
+fileLoaded : Maybe String -> Bool
+fileLoaded url =
+    case url of
+        Just url ->
+            True
+
+        Nothing ->
+            False
 
 
 formatTime : Int -> String
