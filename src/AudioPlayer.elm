@@ -307,12 +307,14 @@ viewPlayButton playing =
     if playing then
         Html.button
             [ Html.Attributes.class "pause"
+            , Html.Attributes.name "pause"
             , Html.Events.onClick Pause
             ]
             [ pauseIcon ]
     else
         Html.button
             [ Html.Attributes.class "play"
+            , Html.Attributes.name "play"
             , Html.Events.onClick Play
             ]
             [ playIcon ]
@@ -335,15 +337,18 @@ viewSpeedControls display playbackRate =
 controlButton : Bool -> Msg -> String -> Html Msg
 controlButton display msg label =
     if display then
-        Html.button
-            [ Html.Attributes.class
-                (msg
+        let
+            name =
+                msg
                     |> toString
                     |> String.toLower
-                )
-            , Html.Events.onClick msg
-            ]
-            [ Html.text label ]
+        in
+            Html.button
+                [ Html.Attributes.class name
+                , Html.Attributes.name name
+                , Html.Events.onClick msg
+                ]
+                [ Html.text label ]
     else
         Html.text ""
 
@@ -352,16 +357,17 @@ viewTimeline : Float -> Float -> Html Msg
 viewTimeline position duration =
     Html.input
         [ Html.Attributes.class "timeline"
-        , Html.Attributes.type' "range"
         , Html.Attributes.max (toString duration)
+        , Html.Attributes.name "timeline"
         , Html.Attributes.step "0.01"
-        , Html.Attributes.value (toString position)
         , Html.Attributes.style
             [ ( "background-size"
               , (toString <| positionPercentage position duration)
                     ++ "% 100%"
               )
             ]
+        , Html.Attributes.type' "range"
+        , Html.Attributes.value (toString position)
         , onInputRange SetTime
         ]
         []
